@@ -106,14 +106,15 @@ uint8 fallTimeControl()
     switch( state )
     {
     case idle:
-        int sample =  analogRead( potPin ) ;
-        if( sample < 10 ) return off;
-
         if( signal.aspect == red )
         {
             prevMillis = millis() ;
-            
+
+            int sample =  analogRead( potPin ) ;
             interval = map( sample, 0, 1023, 3000, 60000 ) ;
+
+             
+            if( sample < 10 ) return red;
 
             state = setRed ;
         }

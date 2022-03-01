@@ -24,6 +24,28 @@ void setup()
 
 void computeLogic() // IN ORDER OF IMPORTANCE
 {
+//********************** BUTTONS ********************************/
+     static uint8 buttonState, override = false ;
+
+    if( greenButtonState  == FALLING ) { 
+        if( override == true ) override = false ;
+        else
+        {
+            buttonState =  green ; 
+            override = true ;
+        }
+    }
+    if( yellowButtonState == FALLING ) { buttonState = yellow ; override =  true ; } 
+    if( redButtonState    == FALLING ) { buttonState =    red ; override =  true ; }
+
+    if( override == true )
+    {
+        signal.aspect = buttonState ;
+        if( buttonState == red )    signal.brakeModule =   red ;
+        else                        signal.brakeModule = green ;
+        return ;
+    }      
+
 //********************** DIRECTION LINE     **********************/    
     if( directionState == LOW )
     {
@@ -66,17 +88,10 @@ void computeLogic() // IN ORDER OF IMPORTANCE
 
     switch( fallTimeControl() )
     {
-        case  green : signal.aspect =  green ; signal.brakeModule =  green ; return ;
         case yellow : signal.aspect = yellow ; signal.brakeModule = yellow ; return ;
         case    red : signal.aspect =    red ; signal.brakeModule =    red ; return ;
         case    off : break ;
     }
-
-
-//********************** BUTTONS ********************************/
-    if( redButtonState    == LOW ) { signal.aspect =    red ; signal.brakeModule =    red ; return ; } // NOTE, may be needed 
-    if( greenButtonState  == LOW ) { signal.aspect =  green ; signal.brakeModule =  green ; return ; }
-    if( yellowButtonState == LOW ) { signal.aspect = yellow ; signal.brakeModule = yellow ; return ; }
 
     signal.aspect =  green ; signal.brakeModule =  green ;                                                 // if no input at all, show green aspect
 }
