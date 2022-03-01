@@ -46,15 +46,15 @@ void computeLogic() // IN ORDER OF IMPORTANCE
         return ;
     }      
 
-//********************** DIRECTION LINE     **********************/    
+//********************** DIRECTION LINE **********************/    
     if( directionState == LOW )
     {
         signal.aspect = red ;
-        if( signal.locked ) { signal.brakeModule = green ; }
-        else                { signal.brakeModule =   red ; } 
+        if( signal.passBehind ) { signal.brakeModule = green ; }
+        else                    { signal.brakeModule =   red ; } 
         return ;
     }
-/**********************  DETECTOR           **********************/
+/**********************  DETECTOR **********************/
     if( signal.track == OCCUPIED )
     {
         signal.aspect = red ;
@@ -62,7 +62,7 @@ void computeLogic() // IN ORDER OF IMPORTANCE
         return ;
     }
 
-/**********************  ADJACENT SIGNALS   **********************/
+/**********************  ADJACENT SIGNALS **********************/
     
     if( signal.type == TWO_TONE ) 
     {

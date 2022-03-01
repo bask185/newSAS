@@ -3,7 +3,7 @@
 #include "src/io.h"
 #include "src/ServoSweep.h"
 
-ServoSweep semaphore( servoPin_, 90, 135, 20, 1  ) ;
+ServoSweep semaphore( servoPin_, 90, 135, 1, 20  ) ;
 
 void setLeds()
 {

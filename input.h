@@ -37,7 +37,7 @@ typedef struct
     uint8 brakeModule ;
     uint8 type ;
     uint8 track ;
-    uint8 locked ;
+    uint8 passBehind ;
 } Signals ;
 
 extern Signals signal ;

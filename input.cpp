@@ -21,6 +21,16 @@ Signals signal ;
 
 uint8 rxFreq = off ;
 
+void readDipSwitches()
+{
+    if( digitalRead( dip1 ) == LOW ) signal.type = TWO_TONE ;
+    else                             signal.type = THREE_TONE ;
+
+    if( digitalRead( dip1 ) == LOW ) signal.passBehind = TWO_TONE ;
+    else                             signal.passBehind = THREE_TONE ;
+
+}
+
 
 
 void debounceDetector() // TESTED SUCCESFULLY
