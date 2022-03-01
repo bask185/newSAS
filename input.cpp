@@ -101,29 +101,23 @@ uint8 fallTimeControl()
 {
     static uint32 prevMillis ;
     static uint32 interval ;
-    static uint8  state = waitRising ;
+    static uint8  state = idle ;
 
     switch( state )
     {
-    // case idle:
-    // //digitalWrite( redLedPin, HIGH );
-    //     if( signal.track == OCCUPIED )
-    //     {
-    //         state = waitRising ;
-    //     }
-    //     return off ;                                            // in this state, fall time control does not control the aspect
+    case idle:
+        int sample =  analogRead( potPin ) ;
+        if( sample < 10 ) return off;
 
-    case waitRising:    
-        if( signal.track == FREE )
+        if( signal.aspect == red )
         {
             prevMillis = millis() ;
-            int sample =  analogRead( potPin ) ;
+            
             interval = map( sample, 0, 1023, 3000, 60000 ) ;
 
-            if( sample < 3 ) state = idle ;
-            else             state = setRed ;
+            state = setRed ;
         }
-        return red ;
+        return off ;
 
     case setRed :
         if( millis() - prevMillis >= interval )
@@ -135,7 +129,7 @@ uint8 fallTimeControl()
             }
             else
             {
-                state = waitRising ;
+                state = idle ;
             }
         }
         return red ;
@@ -143,9 +137,8 @@ uint8 fallTimeControl()
     case setYellow :
         if( millis() - prevMillis >= interval )
         {
-            state = waitRising ;
+            state = idle ;
         }
         return yellow ; 
     }
-    return off ;
 }
