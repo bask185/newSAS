@@ -3,14 +3,23 @@
 #include "src/io.h"
 #include "src/ServoSweep.h"
 
+uint8 servoPosMin ;
+uint8 servoPosMax ;
+
 ServoSweep semaphore( servoPin_, 90, 135, 20, 1  ) ;
 
+#define setSignals(a,b,c,d) \
+{ \
+    digitalWrite( greenLedPin, a ) ; digitalWrite( yellowLedPin,  b ) ; digitalWrite( yellowLedPin2,  c ) ; digitalWrite( redLedPin,  d ) ; \
+}
 void setLeds()
 {
-    if( signal.aspect ==  green ) { digitalWrite( greenLedPin, HIGH ) ; digitalWrite( yellowLedPin,  LOW ) ; digitalWrite( redLedPin,  LOW ) ; } // must be fading in the future
-    if( signal.aspect == yellow ) { digitalWrite( greenLedPin,  LOW ) ; digitalWrite( yellowLedPin, HIGH ) ; digitalWrite( redLedPin,  LOW ) ; }
-    if( signal.aspect ==    red ) { digitalWrite( greenLedPin,  LOW ) ; digitalWrite( yellowLedPin,  LOW ) ; digitalWrite( redLedPin, HIGH ) ; }
+    if( signal.aspect ==   green ) { setSignals( HIGH,  LOW,  LOW,  LOW ) ; } // must be fading in the future
+    if( signal.aspect ==  yellow ) { setSignals(  LOW, HIGH,  LOW,  LOW ) ; }
+    if( signal.aspect == yellow2 ) { setSignals(  LOW, HIGH, HIGH,  LOW ) ; }
+    if( signal.aspect ==     red ) { setSignals(  LOW,  LOW,  LOW, HIGH ) ; }
 }
+#undef setSignals
 
 void initializeSemaphore()
 {
