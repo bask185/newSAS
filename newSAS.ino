@@ -4,6 +4,7 @@
 #include "src/macros.h"
 #include "input.h"
 #include "output.h"
+#include "teachin.h"
 
 const int incFrequency[/*tone*/ 3][/* color */ 5] = {
 //  green, yellow, yellow2,     red   no signal <-- incoming frequency
@@ -44,7 +45,7 @@ the 4th tone hould be added to falltime controll
 */
 
 
-void computeLogic() // TAKES ALL INPUT IN ACOUNT AND SET THE SIGNAL AND BRAKE MODUE ASPECTS ACCORDINGLY
+void controlSignalAspect() // TAKES ALL INPUT IN ACOUNT AND SET THE SIGNAL AND BRAKE MODUE ASPECTS ACCORDINGLY
 {
 //********************** DIRECTION LINE  **********************/    
     if( directionState == LOW )
@@ -84,7 +85,7 @@ void computeLogic() // TAKES ALL INPUT IN ACOUNT AND SET THE SIGNAL AND BRAKE MO
     }
 
     /*
-    if( signal.type == TWO_TONE )                                               // works fine
+    if( signal.type == TWO_TONE )                                               // HAS NOT BEEN TESTED
     {
         switch( rxFreq ) 
         {
@@ -123,18 +124,15 @@ void computeLogic() // TAKES ALL INPUT IN ACOUNT AND SET THE SIGNAL AND BRAKE MO
 void loop()
 {
     debounceInputs() ;
+    readIncFreq() ;
 
-    computeLogic() ;
+    controlSignalAspect() ;
 
-    setLeds() ;
-
-    controlSemaphore() ;
-
-    setBrakeModule() ;
-
-/*TODO
-    // add EEPROM + config
-    // sendTxSignals() ;
-    // fall time does not seem to work
-    */
+    if( teachIn() == waitButtonPress )  // if config mode is in this state,     control all outputs
+    {
+        setLeds() ;
+        controlSemaphore() ;
+        setBrakeModule() ;
+        sendTxSignals() ;
+    }
 }

@@ -12,12 +12,12 @@
                     else
 
 static StateMachine sm ;
-uint8 pwm ;
 
 
 enum EEaddresses {
     PWM_GREEN_ADDR = 0x00,
     PWM_YELLOW_ADDR,
+    PWM_YELLOW_ADDR2,
     PWM_RED_ADDR,
     GREEN_SERVO_POS,
     RED_SERVO_POS,
@@ -25,33 +25,35 @@ enum EEaddresses {
 }; 
 
 uint16 adcSample ;
-
+const int magicMike = 0xCC ;
 // VARIABLES
 
 // FUNCTIONS
 extern void teachInInit(void)
 { 
-    sm.setState( waitButtonPress, 0 ) ;
+    sm.setState( waitButtonPress ) ;
 
     uint8_t firstEntry = EEPROM.read( INIT_ADDR ) ;
 
-    if( firstEntry != 0xCC )  // is signal is already started once, retreive values
+    if( firstEntry != magicMike )  // is signal is already started once, retreive values
     {
         EEPROM.write( GREEN_SERVO_POS,   90 ) ;
         EEPROM.write( RED_SERVO_POS,    135 ) ;
         EEPROM.write( PWM_GREEN_ADDR,   255 ) ;
         EEPROM.write( PWM_YELLOW_ADDR,  255 ) ;
+        EEPROM.write( PWM_YELLOW_ADDR2, 255 ) ;
         EEPROM.write( PWM_RED_ADDR,     255 ) ;
 
-        EEPROM.write( INIT_ADDR, 0xCC) ;
+        EEPROM.write( INIT_ADDR, magicMike ) ;
         Serial.println("FIRST TIME BOOTING SAS SOFTWARE V1.O, DEFAULT SETTINGS ARE LOADED") ;
     }
 
-    servoPosMin   =    EEPROM.read( GREEN_SERVO_POS ) ; Serial.println(servoPosMin);
-    servoPosMax   =    EEPROM.read( RED_SERVO_POS )   ; Serial.println(servoPosMax);
-    // pwm  =    EEPROM.read( PWM_GREEN_ADDR )  ; Serial.println(pwm );
-    // pwm =    EEPROM.read( PWM_YELLOW_ADDR ) ; Serial.println(pwm);
-    // pwm    =    EEPROM.read( PWM_RED_ADDR )    ; Serial.println(pwm);
+    servoPosMin = EEPROM.read(  GREEN_SERVO_POS ) ; Serial.println( servoPosMin );
+    servoPosMax = EEPROM.read(    RED_SERVO_POS ) ; Serial.println( servoPosMax );
+    greenPwm    = EEPROM.read(   PWM_GREEN_ADDR ) ; Serial.println( greenPwm );
+    yellowPwm   = EEPROM.read(  PWM_YELLOW_ADDR ) ; Serial.println( yellowPwm );
+    yellowPwm2  = EEPROM.read( PWM_YELLOW_ADDR2 ) ; Serial.println( yellowPwm2 );
+    redPwm      = EEPROM.read(     PWM_RED_ADDR ) ; Serial.println( redPwm );
 }
 
 // STATE FUNCTIONS
@@ -60,7 +62,7 @@ StateFunction( waitButtonPress )// just wait on the first button press
 { 
     entryState 
     {
-        
+        Serial.println("run mode") ;
     }
     onState 
     {
@@ -68,7 +70,7 @@ StateFunction( waitButtonPress )// just wait on the first button press
     }
     exitState 
     {
-
+        Serial.println("entering config mode") ;
         return true;
     }
 }
@@ -86,13 +88,13 @@ StateFunction( waitButtonPress )// just wait on the first button press
 //     onState
 //     {
 //         if( val < 10 || sm.timeout() ) sm.exit(); // if timeout or button press occurs, exit
-//         else                           pwm = map( adcSample, 0, 1023, 0, 255 ) ;
+//         else                           greenPwm = map( adcSample, 0, 1023, 0, 255 ) ;
         
-//         analogWrite( greenLedPin, pwm ) ;
+//         analogWrite( greenLedPin, greenPwm ) ;
 //     }
 //     exitState
 //     {
-//         EEPROM.write( PWM_GREEN_ADDR, pwm ) ;
+//         EEPROM.write( PWM_GREEN_ADDR, greenPwm ) ;
 //         digitalWrite( greenLedPin, LOW ) ;
 //         return true;
 //     }
@@ -115,7 +117,7 @@ StateFunction( waitButtonPress )// just wait on the first button press
 //     }
 //     exitState 
 //     {
-//         digitalWrite(yellowLedPin, 0);
+//         digitalWrite(yellowLedPin, LOW );
 //         EEPROM.write( PWM_YELLOW_ADDR, pwm  ) ;
 //         return true;
 //     }
@@ -131,15 +133,15 @@ StateFunction( waitButtonPress )// just wait on the first button press
 //     onState 
 //     {
 //             if( val < 10 || sm.timeout() ) sm.exit();
-//             else                           pwm = map ( adcSample, 0, 1023, 0, 255 ) ;
+//             else                           yellowPwm2 = map ( adcSample, 0, 1023, 0, 255 ) ;
 
-//             analogWrite( yellowLedPin2, pwm);
+//             analogWrite( yellowLedPin2, yellowPwm2);
 //         }
 //     }
 //     exitState 
 //     {
 //         digitalWrite( yellowLedPin2, LOW );
-//         EEPROM.write( PWM_YELLOW_ADDR, pwm  ) ;
+//         EEPROM.write( PWM_YELLOW_ADDR, yellowPwm2  ) ;
 //         return true;
 //     }
 // }
@@ -155,14 +157,14 @@ StateFunction( waitButtonPress )// just wait on the first button press
 //     onState
 //     {
 //         if( adcSample < 10 || sm.timeout() ) sm.exit();
-//         else                                 pwm = map ( adcSample, 0, 1023, 0, 255 ) ;
+//         else                                 redPwm = map ( adcSample, 0, 1023, 0, 255 ) ;
 
-//         analogWrite( redLedPin, pwm ) ;
+//         analogWrite( redLedPin, redPwm ) ;
 //     }
 //     exitState
 //     {
 //         digitalWrite( redLedPin, LOW ) ;
-//         EEPROM.write( PWM_RED_ADDR, pwm ) ;
+//         EEPROM.write( PWM_RED_ADDR, redPwm ) ;
 //         return true;
 //     }
 // }
@@ -174,12 +176,11 @@ StateFunction( setServoGreen )
     entryState
     {
         sm.setTimeout( 30000 ) ;
-        semaphore.attach( servoPin_ );
         digitalWrite( greenLedPin, HIGH ) ;
     }
     onState
     {
-        if( val < 10 || sm.timeout() ) sm.exit();
+        if( adcSample < 10 || sm.timeout() ) sm.exit();
 
         else
         {  
@@ -190,7 +191,7 @@ StateFunction( setServoGreen )
     exitState
     {
         EEPROM.write( GREEN_SERVO_POS, servoPosMin ) ;
-        semaphore.detach();
+
         digitalWrite( greenLedPin, LOW ) ;
         return true;
     }
@@ -200,18 +201,16 @@ StateFunction( setServoGreen )
 
 StateFunction( setServoRed )
 {
-    uint16_t val;
-
     entryState
     { 
         sm.setTimeout( 30000 ) ;
-        semaphore.attach( servoPin_ );
+
         digitalWrite( redLedPin, HIGH ) ;
     }
 
     onState
     {
-        if( val < 10 || sm.timeout() ) sm.exit();
+        if( adcSample < 10 || sm.timeout() ) sm.exit();
 
         else
         {   
@@ -223,7 +222,7 @@ StateFunction( setServoRed )
     exitState
     {
         EEPROM.write( RED_SERVO_POS, servoPosMin ) ;
-        semaphore.detach();
+
         digitalWrite( redLedPin, LOW ) ;
 
         return true;
@@ -232,7 +231,7 @@ StateFunction( setServoRed )
 
 
 // STATE MACHINE
-extern bool teachIn(void)
+uint8 teachIn(void)
 {
     REPEAT_MS( 20 )
     {
@@ -243,12 +242,12 @@ extern bool teachIn(void)
 
         State( waitButtonPress ) {
             //nextState(adjustGreenBrightness, 100) ; }
-            nextState(setServoGreen, 1000) ; }
+            sm.nextState(setServoGreen, 1000) ; }
 
         // State( adjustGreenBrightness ) {
-        //     if( sm.timeoutError() )            sm.nextState( waitButtonPress,           0 ) ;
-        //     else if( signal.type == TWO_TONE ) sm.nextState( adjustRedBrightness,    1000 ) ;      // two tone only has green and red
-        //     else                               sm.nextState( adjustYellowBrightness, 1000 ) ; }    // three or four tone
+        //     if( sm.timeoutError() )            sm.nextState( waitButtonPress,             0 ) ;
+        //     else if( signal.type == TWO_TONE ) sm.nextState( adjustRedBrightness,      1000 ) ;      // two tone only has green and red
+        //     else                               sm.nextState( adjustYellowBrightness,   1000 ) ; }    // three or four tone
 
         // State( adjustYellowBrightness ) {
         //     if( sm.timeoutError() )             sm.nextState( waitButtonPress,            0 ) ;    
@@ -268,7 +267,7 @@ extern bool teachIn(void)
             else                    sm.nextState( setServoRed,  1000 ) ; }
         
         State( setServoRed ) {
-            sm.nextState( waitButtonPress, 1000 ) ;
+            sm.nextState( waitButtonPress, 1000 ) ; }
 
-    STATE_MACHINE_END(sm)
+    STATE_MACHINE_END(sm);
 }

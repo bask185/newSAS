@@ -84,21 +84,19 @@ void debounceInputs() // TESTED SUCCESFULLY
 
 void readIncFreq()
 {
-    static uint32 prevTime ;
-
     if( receiveState == RISING || receiveState == FALLING )
     {
-        rxFreq = millis() - prevTime ;
+        static uint32 prevTime = 0 ;
+        uint32 lastTime = millis() - prevTime ;
+
         prevTime = millis() ;
     
-        if(      rxFreq > (  greenFreq - 10 ) && rxFreq > (  greenFreq + 10 ) ) rxFreq = green ; 
-        else if( rxFreq > ( yellowFreq - 10 ) && rxFreq > ( yellowFreq + 10 ) ) rxFreq = yellow ;
-        else if( rxFreq > (yellowFreq2 - 10 ) && rxFreq > (yellowFreq2 + 10 ) ) rxFreq = yellow2 ;
-        else if( rxFreq > (    redFreq - 10 ) && rxFreq > (    redFreq + 10 ) ) rxFreq = red ; 
-        else                                                                    rxFreq = off ;
+        if(      lastTime > (  greenFreq - 10 ) && lastTime < (  greenFreq + 10 ) ) rxFreq = green ; 
+        else if( lastTime > ( yellowFreq - 10 ) && lastTime < ( yellowFreq + 10 ) ) rxFreq = yellow ;
+        else if( lastTime > (yellow2Freq - 10 ) && lastTime < (yellow2Freq + 10 ) ) rxFreq = yellow2 ;
+        else if( lastTime > (    redFreq - 10 ) && lastTime < (    redFreq + 10 ) ) rxFreq = red ; 
+        else                                                                        rxFreq = off ;
     }
-
-    rxFreq = off ; // delete me
 }
 
 enum

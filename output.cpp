@@ -1,10 +1,14 @@
 #include "output.h"
 #include "input.h"
 #include "src/io.h"
-#include "src/ServoSweep.h"
+
 
 uint8 servoPosMin ;
 uint8 servoPosMax ;
+uint8 greenPwm ;
+uint8 yellowPwm ;
+uint8 yellowPwm2 ;
+uint8 redPwm ;
 
 ServoSweep semaphore( servoPin_, 90, 135, 20, 1  ) ;
 
@@ -66,3 +70,23 @@ void setBrakeModule()
 
     } END_REPEAT
 }
+
+#define setFreq(x) case x: freq = x##Freq ; break ;
+void sendTxSignals()
+{
+    uint8 freq ;
+    switch( signal.aspect )
+    {
+        setFreq(   green ) ;
+        setFreq(  yellow ) ;
+        setFreq( yellow2 ) ;
+        setFreq(     red ) ;
+    }
+    
+    REPEAT_MS( freq )
+    {
+        digitalWrite( slowSpeed, !digitalRead( slowSpeed) ) ;      
+
+    } END_REPEAT
+}
+#undef getFreq

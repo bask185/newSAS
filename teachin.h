@@ -12,7 +12,5 @@ enum teachInStates {
 } ;
 
 
-extern bool teachIn(void) ; 
+extern uint8 teachIn(void) ; 
 extern void teachInInit() ;
-extern void teachInSetState(unsigned char) ;
-extern unsigned char teachInGetState(void) ;

@@ -14,13 +14,14 @@ extern uint8 override ;
 
 const int   greenFreq =  50 ;
 const int  yellowFreq = 100 ; 
-const int yellowFreq2 = 150 ; 
+const int yellow2Freq = 150 ; 
 const int     redFreq = 200 ;
 
 extern uint8 rxFreq ;
 
 extern  void debounceInputs() ;
 extern uint8 fallTimeControl() ;
+extern  void readIncFreq() ;
 
 enum
 {
