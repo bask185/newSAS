@@ -34,10 +34,26 @@ void controlSemaphore()
 
 void setBrakeModule()
 {
-    switch( signal.aspect )
+    /* NB there should be some delay in the order of ~10 seconds before the break mopule is set.
+    * in the event of a shut off relay, there should be some time to let the train pass this section
+    */
+
+    // switch( signal.brakeModule )
+    // {
+    //     case  green : digitalWrite( relayPin_,  LOW ) ; digitalWrite( slowSpeed,  LOW ) ; break ;
+    //     case yellow : digitalWrite( relayPin_, HIGH ) ; digitalWrite( slowSpeed, HIGH ) ; break ;
+    //     case    red : digitalWrite( relayPin_, HIGH ) ; digitalWrite( slowSpeed,  LOW ) ; break ;
+    // }
+
+    REPEAT_MS( yellowFreq )
     {
-        case  green : digitalWrite( relayPin_,  LOW ) ; digitalWrite( slowSpeed,  LOW ) ; break ;
-        case yellow : digitalWrite( relayPin_, HIGH ) ; digitalWrite( slowSpeed, HIGH ) ; break ;
-        case    red : digitalWrite( relayPin_, HIGH ) ; digitalWrite( slowSpeed,  LOW ) ; break ;
-    }
+        digitalWrite( relayPin_, !digitalRead( relayPin_) ) ;
+
+    } END_REPEAT  
+
+    REPEAT_MS( redFreq )
+    {
+        digitalWrite( slowSpeed, !digitalRead( slowSpeed) ) ;      
+
+    } END_REPEAT
 }

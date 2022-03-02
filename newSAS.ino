@@ -5,6 +5,14 @@
 #include "input.h"
 #include "output.h"
 
+const int incFrequency[/*tone*/ 3][/* color */ 5] = {
+//  green, yellow, yellow2,     red   no signal <-- incoming frequency
+  { green,  green,   green,   green,   off },// <-- two tone
+  { green,  green,   green,  yellow,   off },// <-- three tone
+  { green,  green,  yellow, yellow2,   off } // <-- four tone
+} ;
+
+
 void setup()
 {
     initIO() ;
@@ -21,23 +29,42 @@ void setup()
 
 
 
+/* How should the buttons work, and what must they override or not?
 
-void computeLogic() // IN ORDER OF IMPORTANCE
+Occupied track or wrong direction must override the button states unconditionally
+if fall time controll is disabled, the green or yellow button may set the signal, green must not set override, yellow button must set override
+if fall time controll is enabled, the green or yellow button should override the aspect and terminate the fall time
+if no detection is used at all, the signal should simply follow the 3 button states.
+
+things TODO
+fall time controll, does not yet have 4 tone
+the 4th tone should be added to signal state.
+the 4th tone hould be added to falltime controll
+
+*/
+
+
+void computeLogic() // TAKES ALL INPUT IN ACOUNT AND SET THE SIGNAL AND BRAKE MODUE ASPECTS ACCORDINGLY
 {
-//********************** BUTTONS ********************************/
-     static uint8 buttonState, override = false ;
-
-    if( greenButtonState  == FALLING ) { 
-        if( override == true ) override = false ;
-        else
-        {
-            buttonState =  green ; 
-            override = true ;
-        }
+//********************** DIRECTION LINE  **********************/    
+    if( directionState == LOW )
+    {
+        override = false ;
+        signal.aspect = red ;
+        if( signal.locked ) { signal.brakeModule = green ; }
+        else                { signal.brakeModule =   red ; } 
+        return ;
     }
-    if( yellowButtonState == FALLING ) { buttonState = yellow ; override =  true ; } 
-    if( redButtonState    == FALLING ) { buttonState =    red ; override =  true ; }
+/**********************  DETECTOR **********************/
+    if( signal.track == OCCUPIED )
+    {
+        override = false ;
+        signal.aspect = red ;
+        signal.brakeModule = red ;
+        return ;
+    }
 
+//********************** BUTTONS ********************************/
     if( override == true )
     {
         signal.aspect = buttonState ;
@@ -46,30 +73,23 @@ void computeLogic() // IN ORDER OF IMPORTANCE
         return ;
     }      
 
-//********************** DIRECTION LINE     **********************/    
-    if( directionState == LOW )
+/**********************  ADJACENT SIGNALS   **********************/
+    
+    uint8 newState = incFrequency[ signal.type ][ rxFreq ] ;
+    if( newState != off )                                                       // TEST ME
     {
-        signal.aspect = red ;
-        if( signal.locked ) { signal.brakeModule = green ; }
-        else                { signal.brakeModule =   red ; } 
-        return ;
-    }
-/**********************  DETECTOR           **********************/
-    if( signal.track == OCCUPIED )
-    {
-        signal.aspect = red ;
-        signal.brakeModule = red ;
+        signal.aspect      = newState ;
+        signal.brakeModule = newState ;
         return ;
     }
 
-/**********************  ADJACENT SIGNALS   **********************/
-    
-    if( signal.type == TWO_TONE ) 
+    /*
+    if( signal.type == TWO_TONE )                                               // works fine
     {
         switch( rxFreq ) 
         {
-            case  green :  signal.aspect =  green ; signal.brakeModule =  green ; return ;
-            case    red :  signal.aspect =  green ; signal.brakeModule =  green ; return ;
+            case  green :  signal.aspect =  green ; signal.brakeModule = green ; return ;
+            case    red :  signal.aspect =  green ; signal.brakeModule = green ; return ;
             case    off : break ;
         }
     }
@@ -83,14 +103,17 @@ void computeLogic() // IN ORDER OF IMPORTANCE
             case    off : break ;
         }
     }
+    */
 
 /**********************  FALL TIME CONTROL  **********************/
 
     switch( fallTimeControl() )
     {
-        case yellow : signal.aspect = yellow ; signal.brakeModule = yellow ; return ;
-        case    red : signal.aspect =    red ; signal.brakeModule =    red ; return ;
-        case    off : break ;
+        case   green : signal.aspect =   green ; signal.brakeModule =  green ; return ;
+        case  yellow : signal.aspect =  yellow ; signal.brakeModule = yellow ; return ;
+        case yellow2 : signal.aspect = yellow2 ; signal.brakeModule = yellow ; return ;
+        case     red : signal.aspect =     red ; signal.brakeModule =    red ; return ;
+        case     off : break ;
     }
 
     signal.aspect =  green ; signal.brakeModule =  green ;                                                 // if no input at all, show green aspect
