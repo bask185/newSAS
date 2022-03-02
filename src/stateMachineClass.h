@@ -14,19 +14,21 @@ class StateMachine {
 public:
     StateMachine() ;
     
-    void    setState( uint8 ) ;
+    void  setState( uint8 ) ;
     uint8 getState() ;
-    void    nextState( uint8, uint32_t ) ;
+    void  nextState( uint8, uint32 ) ;
     uint8 entryState() ;
     uint8 onState() ;
     uint8 exitState() ;
     uint8 run() ;
-    void    setTimeout( uint32_t ) ;
+    void  setTimeout( uint32 ) ;
     uint8 timeout() ;
-    void    exit() ;
-    void    reboot( uint32_t ) ;
+    uint8 timeoutError() ;
+
+    void  exit() ;
+    void  reboot( uint32 ) ;
     uint8 endState() ;
-    uint8 repeat( uint32_t ) ;
+    uint8 repeat( uint32 ) ;
     #ifdef DEBUG
     uint8  runOnce ;  // if debug is active, this must be public in order to print the state names
     #endif

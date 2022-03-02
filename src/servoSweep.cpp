@@ -62,9 +62,10 @@ void ServoSweep::setMax( uint8 _max ) {
 //     servo.attach( servoPin ) ;
 // }
 
-// void ServoSweep::turnOff() {
-//     servo.detach(  ) ;
-// }
+void ServoSweep::write( uint8 _pos) {
+    pos = _pos ;
+    servo.write( pos ) ;
+}
 
 uint8 ServoSweep::sweep ( ) {
     if( millis() > timeToRun ) {

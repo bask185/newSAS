@@ -1,16 +1,29 @@
 #include "output.h"
 #include "input.h"
 #include "src/io.h"
-#include "src/ServoSweep.h"
+
+
+uint8 servoPosMin ;
+uint8 servoPosMax ;
+uint8 greenPwm ;
+uint8 yellowPwm ;
+uint8 yellowPwm2 ;
+uint8 redPwm ;
 
 ServoSweep semaphore( servoPin_, 90, 135, 1, 20  ) ;
 
+#define setSignals(a,b,c,d) \
+{ \
+    digitalWrite( greenLedPin, a ) ; digitalWrite( yellowLedPin,  b ) ; digitalWrite( yellowLedPin2,  c ) ; digitalWrite( redLedPin,  d ) ; \
+}
 void setLeds()
 {
-    if( signal.aspect ==  green ) { digitalWrite( greenLedPin, HIGH ) ; digitalWrite( yellowLedPin,  LOW ) ; digitalWrite( redLedPin,  LOW ) ; } // must be fading in the future
-    if( signal.aspect == yellow ) { digitalWrite( greenLedPin,  LOW ) ; digitalWrite( yellowLedPin, HIGH ) ; digitalWrite( redLedPin,  LOW ) ; }
-    if( signal.aspect ==    red ) { digitalWrite( greenLedPin,  LOW ) ; digitalWrite( yellowLedPin,  LOW ) ; digitalWrite( redLedPin, HIGH ) ; }
+    if( signal.aspect ==   green ) { setSignals( HIGH,  LOW,  LOW,  LOW ) ; } // must be fading in the future
+    if( signal.aspect ==  yellow ) { setSignals(  LOW, HIGH,  LOW,  LOW ) ; }
+    if( signal.aspect == yellow2 ) { setSignals(  LOW, HIGH, HIGH,  LOW ) ; }
+    if( signal.aspect ==     red ) { setSignals(  LOW,  LOW,  LOW, HIGH ) ; }
 }
+#undef setSignals
 
 void initializeSemaphore()
 {
@@ -34,10 +47,46 @@ void controlSemaphore()
 
 void setBrakeModule()
 {
+    /* NB there should be some delay in the order of ~10 seconds before the break mopule is set.
+    * in the event of a shut off relay, there should be some time to let the train pass this section
+    */
+
+    // switch( signal.brakeModule )
+    // {
+    //     case  green : digitalWrite( relayPin_,  LOW ) ; digitalWrite( slowSpeed,  LOW ) ; break ;
+    //     case yellow : digitalWrite( relayPin_, HIGH ) ; digitalWrite( slowSpeed, HIGH ) ; break ;
+    //     case    red : digitalWrite( relayPin_, HIGH ) ; digitalWrite( slowSpeed,  LOW ) ; break ;
+    // }
+
+    REPEAT_MS( yellowFreq )
+    {
+        digitalWrite( relayPin_, !digitalRead( relayPin_) ) ;
+
+    } END_REPEAT  
+
+    REPEAT_MS( redFreq )
+    {
+        digitalWrite( slowSpeed, !digitalRead( slowSpeed) ) ;      
+
+    } END_REPEAT
+}
+
+#define setFreq(x) case x: freq = x##Freq ; break ;
+void sendTxSignals()
+{
+    uint8 freq ;
     switch( signal.aspect )
     {
-        case  green : digitalWrite( relayPin_,  LOW ) ; digitalWrite( slowSpeed,  LOW ) ; break ;
-        case yellow : digitalWrite( relayPin_, HIGH ) ; digitalWrite( slowSpeed, HIGH ) ; break ;
-        case    red : digitalWrite( relayPin_, HIGH ) ; digitalWrite( slowSpeed,  LOW ) ; break ;
+        setFreq(   green ) ;
+        setFreq(  yellow ) ;
+        setFreq( yellow2 ) ;
+        setFreq(     red ) ;
     }
+    
+    REPEAT_MS( freq )
+    {
+        digitalWrite( slowSpeed, !digitalRead( slowSpeed) ) ;      
+
+    } END_REPEAT
 }
+#undef getFreq

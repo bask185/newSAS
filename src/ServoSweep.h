@@ -12,7 +12,7 @@ public:
     void setMin( uint8 _min ) ;
     void setMax( uint8 _max ) ;
     // void turnOn() ;
-    // void turnOff() ;
+    void write( uint8 ) ;
     void begin( );
 
 private:

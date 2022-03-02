@@ -17,3 +17,4 @@ A7	configPin	INPUT
 11	yellowLedPin	OUTPUT
 10	redLedPin	OUTPUT
 13	servoPin_	OUTPUT
+2	yellowLedPin2	OUTPUT
