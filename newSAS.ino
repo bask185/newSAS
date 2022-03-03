@@ -35,17 +35,14 @@ void setup()
 
 
 
-/* How should the buttons work, and what must they override or not?
+/*
+things TODO for version 2.
+-  the pre signal must work differently if it is attached to a main signal down line.
+   I can use a dip setting for that. (attached/detached pre signal)
 
-Occupied track or wrong direction must override the button states unconditionally
-if fall time controll is disabled, the green or yellow button may set the signal, green must not set override, yellow button must set override
-if fall time controll is enabled, the green or yellow button should override the aspect and terminate the fall time
-if no detection is used at all, the signal should simply follow the 3 button states.
-
-things TODO
-fall time controll, does not yet have 4 tone
-the 4th tone should be added to signal state.
-the 4th tone hould be added to falltime controll
+- similarly. The led setting for a german pre signal may be different in nature. I could use the fourth signal type.
+  the block signal must use green and red, but the pre signal should use y1 and y2 and may contain either expect green of expect red
+  this is only needed when pre signal is attached to main signal
 
 */
 
