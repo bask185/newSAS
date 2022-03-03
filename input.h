@@ -11,6 +11,7 @@ extern uint8 receiveState ;
 extern uint8 directionState ;
 extern uint8 buttonState ;
 extern uint8 override ;
+extern  uint8 fallTimeOn ;
 
 const int   greenFreq =  50 ;
 const int  yellowFreq = 100 ; 
@@ -22,6 +23,7 @@ extern uint8 rxFreq ;
 extern  void debounceInputs() ;
 extern uint8 fallTimeControl() ;
 extern  void readIncFreq() ;
+extern  void readDipSwitches() ;
 
 enum
 {

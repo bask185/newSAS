@@ -19,26 +19,17 @@ uint8 receiveState ;
 uint8 directionState ;
 uint8 buttonState ;
 uint8 override ;
+uint8 fallTimeOn ;
 
 Signals signal ;
 
 uint8 rxFreq = off ;
 
-void readDipSwitches()
-{
-    if( digitalRead( dip1 ) == LOW ) signal.type = TWO_TONE ;
-    else                             signal.type = THREE_TONE ;
-
-    if( digitalRead( dip1 ) == LOW ) signal.passBehind = TWO_TONE ;
-    else                             signal.passBehind = THREE_TONE ;
-
-}
-
 
 void readDipSwitches()
 {
-    signal.type = ( digitalRead( dip1 ) << 1 ) | digitalRead( dip2 ) ; // two, three or four tone
-    signal.locked = digitalRead( dip3 ); 
+    signal.type = ( !digitalRead( dip1 ) << 1 ) | !digitalRead( dip2 ) ; // two, three or four tone
+    signal.passBehind = digitalRead( dip3 ); 
     
 }
 
@@ -52,6 +43,7 @@ void debounceDetector() // TESTED SUCCESFULLY
     {
         counter = 10 ;
         signal.track = OCCUPIED ;
+        fallTimeOn = 1 ;
     }
 
     REPEAT_MS( 100 )
@@ -128,6 +120,17 @@ enum
     setYellow2,
 } ;
 
+void blink()
+{
+    digitalWrite( greenLedPin, HIGH ) ;
+    delay(200);
+    digitalWrite( greenLedPin,  LOW ) ;
+    delay(200);
+}
+
+#define TIME_EXPIRED millis() - prevMillis >= interval
+#define LOAD_TIMER   prevMillis = millis()
+
 uint8 fallTimeControl()
 {
     static uint32 prevMillis ;
@@ -139,11 +142,9 @@ uint8 fallTimeControl()
     REPEAT_MS( 100 )                                                            // update adc and interval sample every 100ms
     {
         sample   = analogRead( potPin ) ;
-        interval = map( sample, 3, 1023, 500, 60000 ) ;
+        interval = map( sample, 5, 1023, 500, 10000 ) ; // MAKE ME 60K
     } END_REPEAT
 
-#define TIME_EXPIRED (millis() - prevMillis >= interval)
-#define LOAD_TIMER   (prevMillis == millis())
 
     switch( fallTimeState )
     {
@@ -156,9 +157,10 @@ uint8 fallTimeControl()
 
         if( rxFreq != off || sample < 5 ) return off ;                          // if receiving a frequency, don't run fall time controll   
 
-        if( detectorState == RISING )
+        if( signal.track == FREE && fallTimeOn == 1 )
         {
             LOAD_TIMER ;
+            fallTimeOn    = 0 ;
             entryState    = true ;                                              // upon entering this state, the signal must become green again
             fallTimeState = setRed ;
         }

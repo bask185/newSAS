@@ -10,8 +10,8 @@ uint8 yellowPwm ;
 uint8 yellowPwm2 ;
 uint8 redPwm ;
 
-ServoSweep semaphore( servoPin_, 90, 135, 20, 1  ) ;
-ServoSweep dist(      255,       90, 135, 20, 1  ) ;
+ServoSweep semaphore( servoPin_, 90, 135, 1, 20  ) ;
+ServoSweep dist(      255,       90, 135, 1, 20  ) ;
 
 #define setSignals(a,b,c,d) \
 { \
@@ -36,7 +36,7 @@ void controlmain()
     if( prevAspect != signal.aspect )
     {   prevAspect  = signal.aspect ;
 
-        if( signal.aspect == red || signal.aspect == yellow ) semaphore.setState( 1 ) ;
+        if( signal.aspect == red || signal.aspect == yellow || signal.aspect == yellow2 ) semaphore.setState( 1 ) ;
         if( signal.aspect == green )                          semaphore.setState( 0 ) ;
     }
 }
@@ -54,7 +54,7 @@ void setBrakeModule()
     //     case    red : digitalWrite( relayPin_, HIGH ) ; digitalWrite( slowSpeed,  LOW ) ; break ;
     // }
 
-    REPEAT_MS( yellowFreq )
+    REPEAT_MS( greenFreq )
     {
         digitalWrite( relayPin_, !digitalRead( relayPin_) ) ;
 

@@ -26,6 +26,8 @@ void setup()
     delay(100);
     debounceInputs() ;
 
+    teachInInit() ;
+
     signal.type = THREE_TONE ;
     signal.track = FREE ;
     signal.aspect = green ;
@@ -99,6 +101,7 @@ void controlSignalAspect() // TAKES ALL INPUT IN ACOUNT AND SET THE SIGNAL AND B
 
 void loop()
 {
+    readDipSwitches() ;
     debounceInputs() ;
     readIncFreq() ;
 
@@ -109,6 +112,6 @@ void loop()
         setLeds() ;
         controlmain() ;
         setBrakeModule() ;
-        sendTxSignals() ;
+        //sendTxSignals() ;
     }
 }
