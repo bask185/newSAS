@@ -68,28 +68,20 @@ void controlSignalAspect() // TAKES ALL INPUT IN ACOUNT AND SET THE SIGNAL AND B
         return ;
     }
 
-//********************** BUTTONS ********************************/
-    if( override == true )
-    {
-        signal.aspect = buttonState ;
-        if( buttonState == red )    signal.brakeModule =   red ;
-        else                        signal.brakeModule = green ;
-        return ;
-    }      
-
 /**********************  ADJACENT SIGNALS   **********************/
     
     if( rxFreq != 0 )
-    uint8 newState = incFrequency[ signal.type ][ rxFreq ] ;
-    if( newState != off )                                                       // TEST ME
     {
-        signal.aspect      = newState ;
-        signal.brakeModule = newState ;
-        return ;
+        uint8 newState = incFrequency[ signal.type ][ rxFreq ] ;
+        if( newState != off )
+        {
+            signal.aspect      = newState ;
+            signal.brakeModule = newState ;
+            return ;
+        }
     }
 
 /**********************  FALL TIME CONTROL  **********************/
-
     switch( fallTimeControl() )
     {
         case   green : signal.aspect =   green ; signal.brakeModule =  green ; return ;
@@ -98,6 +90,11 @@ void controlSignalAspect() // TAKES ALL INPUT IN ACOUNT AND SET THE SIGNAL AND B
         case     red : signal.aspect =     red ; signal.brakeModule =    red ; return ;
         case     off : break ;
     }
+
+//********************** BUTTONS ********************************/
+    if(  greenButtonState == FALLING ){ signal.aspect =  green ; signal.brakeModule =  green ; }
+    if( yellowButtonState == FALLING ){ signal.aspect = yellow ; signal.brakeModule = yellow ; }
+    if(    redButtonState == FALLING ){ signal.aspect =  green ; signal.brakeModule =    red ; }
 }
 
 
