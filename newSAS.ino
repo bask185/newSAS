@@ -8,9 +8,12 @@
 
 const int incFrequency[/*tone*/ 3][/* color */ 5] = {
 //  green, yellow, yellow2,     red   no signal <-- incoming frequency
-  { green,  green,   green,   green,   off },// <-- two tone
-  { green,  green,   green,  yellow,   off },// <-- three tone
-  { green,  green,  yellow, yellow2,   off } // <-- four tone
+  {   off,  green,   green,   green,   off },// <-- two tone
+  {   off,  green,   green,  yellow,   off },// <-- three tone
+  {   off,  green,  yellow, yellow2,   off } // <-- four tone
+//  N.B. in order to work with short detectors, a green aspect of up-line signal
+//       is ignored. This will make sure that the signal does not become green
+//       as soon as the detector falls off
 } ;
 
 
@@ -76,6 +79,7 @@ void controlSignalAspect() // TAKES ALL INPUT IN ACOUNT AND SET THE SIGNAL AND B
 
 /**********************  ADJACENT SIGNALS   **********************/
     
+    if( rxFreq != 0 )
     uint8 newState = incFrequency[ signal.type ][ rxFreq ] ;
     if( newState != off )                                                       // TEST ME
     {
@@ -83,28 +87,6 @@ void controlSignalAspect() // TAKES ALL INPUT IN ACOUNT AND SET THE SIGNAL AND B
         signal.brakeModule = newState ;
         return ;
     }
-
-    /*
-    if( signal.type == TWO_TONE )                                               // HAS NOT BEEN TESTED
-    {
-        switch( rxFreq ) 
-        {
-            case  green :  signal.aspect =  green ; signal.brakeModule = green ; return ;
-            case    red :  signal.aspect =  green ; signal.brakeModule = green ; return ;
-            case    off : break ;
-        }
-    }
-    else if( signal.type == THREE_TONE )
-    {
-        switch( rxFreq )
-        { 
-            case  green : signal.aspect =  green ; signal.brakeModule =  green ; return ;
-            case yellow : signal.aspect =  green ; signal.brakeModule =  green ; return ;
-            case    red : signal.aspect = yellow ; signal.brakeModule = yellow ; return ;
-            case    off : break ;
-        }
-    }
-    */
 
 /**********************  FALL TIME CONTROL  **********************/
 
@@ -116,8 +98,6 @@ void controlSignalAspect() // TAKES ALL INPUT IN ACOUNT AND SET THE SIGNAL AND B
         case     red : signal.aspect =     red ; signal.brakeModule =    red ; return ;
         case     off : break ;
     }
-
-    signal.aspect =  green ; signal.brakeModule =  green ;                                                 // if no input at all, show green aspect
 }
 
 

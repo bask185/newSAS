@@ -1,6 +1,7 @@
 #include "input.h"
 #include "src/io.h"
 #include "src/debounceClass.h"
+#include "src/stateMachineClass.h"
 
 Debounce detector( detectorPin ) ;
 Debounce greenButton( greenButtonPin ) ;
@@ -112,87 +113,60 @@ uint8 fallTimeControl()
 {
     static uint32 prevMillis ;
     static uint32 interval ;
+    static uint16 sample ;
     static uint8  fallTimeState = fallTimeOff ;
+    static bool   entryState = true ;
+
+    REPEAT_MS( 100 )                                                            // update adc and interval sample every 100ms
+    {
+        sample   = analogRead( potPin ) ;
+        interval = map( sample, 3, 1023, 500, 60000 ) ;
+    } END_REPEAT
+
+#define TIME_EXPIRED (millis() - prevMillis >= interval)
+#define LOAD_TIMER   (prevMillis == millis())
 
     switch( fallTimeState )
     {
     case fallTimeOff:
-        if( signal.aspect == red )
+        if( entryState )
+        {   entryState = false ;
+
+            return green ;
+        }
+
+        if( rxFreq != off || sample < 5 ) return off ;                          // if receiving a frequency, don't run fall time controll   
+
+        if( detectorState == RISING )
         {
-            prevMillis = millis() ;
-
-            int sample =  analogRead( potPin ) ;
-            interval = map( sample, 5, 1023, 3000, 60000 ) ;
-
-// if fall time controll is disabled, the green or yellow button may set the aspect, yellow button must set override, green must not.
-            if( sample < 5 ) 
-            {
-                if( greenButtonState  == FALLING )
-                {
-                    buttonState = green ;
-                    return green ;
-                }
-                if( yellowButtonState == FALLING )
-                {
-                    override = true ;
-                    buttonState = yellow ;
-                    return yellow ;
-                }
-                return red;
-            }
+            LOAD_TIMER ;
+            entryState    = true ;                                              // upon entering this state, the signal must become green again
             fallTimeState = setRed ;
         }
         return off ;
 
-// if fall time controll is enabled, the green or yellow button should override the aspect and terminate the fall time
     case setRed :
+        if( TIME_EXPIRED )                                                      // keep return red red until the time expired
+        {   LOAD_TIMER ;
 
-        if( greenButtonState  == FALLING )
-        {
-            fallTimeState = fallTimeOff ;
-            buttonState = green ;
-            return green ;
-        }
-        if( yellowButtonState == FALLING )
-        {
-            fallTimeState = fallTimeOff ;
-            buttonState = yellow ;
-            override = true ;
-            return yellow ;
-        }
-        if( millis() - prevMillis >= interval )          // time has expired, we now take the next aspect
-        {
-            prevMillis = millis() ;
-
-            if( signal.type ==   TWO_TONE ) fallTimeState = fallTimeOff ;         
-            if( signal.type == THREE_TONE ) fallTimeState = setYellow ;         
-            if( signal.type ==  FOUR_TONE ) fallTimeState = setYellow2 ;
+            if( signal.type ==  FOUR_TONE ) fallTimeState = setYellow2  ;
+            if( signal.type == THREE_TONE ) fallTimeState = setYellow   ;         
+            if( signal.type ==   TWO_TONE ) fallTimeState = fallTimeOff ;
         }
         return red ;
 
     case setYellow2 :
-        if( greenButtonState  == FALLING )
-        {
-            fallTimeState = fallTimeOff ;
-            buttonState = green ;
-            return green ;
-        }
-        if( millis() - prevMillis >= interval )
-        {
+        if( TIME_EXPIRED )
+        {   LOAD_TIMER ;
+            
             fallTimeState = setYellow ;
         }
         return yellow2 ;
 
     case setYellow :
-        if( greenButtonState  == FALLING )
+        if( TIME_EXPIRED )
         {
-            fallTimeState = fallTimeOff ;
-            buttonState = green ;
-            return green ;
-        }
-        if( millis() - prevMillis >= interval )
-        {
-            fallTimeState = fallTimeOff ;
+            fallTimeState = fallTimeOff ; 
         }
         return yellow ; 
     }
