@@ -50,51 +50,50 @@ the 4th tone hould be added to falltime controll
 
 void controlSignalAspect() // TAKES ALL INPUT IN ACOUNT AND SET THE SIGNAL AND BRAKE MODUE ASPECTS ACCORDINGLY
 {
+    uint8_t newState = off ;
 //********************** DIRECTION LINE  **********************/    
     if( directionState == LOW )
     {
-        override = false ;
         signal.aspect = red ;
         if( signal.locked ) { signal.brakeModule = green ; }
         else                { signal.brakeModule =   red ; } 
         return ;
     }
-/**********************  DETECTOR **********************/
+/**********************  DETECTOR *****************************/
     if( signal.track == OCCUPIED )
     {
-        override = false ;
         signal.aspect = red ;
         signal.brakeModule = red ;
         return ;
     }
 
-/**********************  ADJACENT SIGNALS   **********************/
-    
-    if( rxFreq != 0 )
+/**********************  ADJACENT SIGNALS   ********************/
+
+    newState = incFrequency[ signal.type ][ rxFreq ] ;
+    if( newState != off )
     {
-        uint8 newState = incFrequency[ signal.type ][ rxFreq ] ;
-        if( newState != off )
-        {
-            signal.aspect      = newState ;
-            signal.brakeModule = newState ;
-            return ;
-        }
+        signal.aspect      = newState ;
+        signal.brakeModule = newState ;
+        return ;
     }
 
-/**********************  FALL TIME CONTROL  **********************/
-    switch( fallTimeControl() )
+/**********************  FALL TIME CONTROL  ********************/
+    newState = fallTimeControl() ;
+    if( newState != off )
     {
-        case   green : signal.aspect =   green ; signal.brakeModule =  green ; return ;
-        case  yellow : signal.aspect =  yellow ; signal.brakeModule = yellow ; return ;
-        case yellow2 : signal.aspect = yellow2 ; signal.brakeModule = yellow ; return ;
-        case     red : signal.aspect =     red ; signal.brakeModule =    red ; return ;
-        case     off : break ;
+        signal.aspect      = newState ;
+        signal.brakeModule = newState ;
+        return ;
     }
 
 //********************** BUTTONS ********************************/
-    if(  greenButtonState == FALLING ){ signal.aspect =  green ; signal.brakeModule =  green ; }
-    if( yellowButtonState == FALLING ){ signal.aspect = yellow ; signal.brakeModule = yellow ; }
-    if(    redButtonState == FALLING ){ signal.aspect =  green ; signal.brakeModule =    red ; }
+    newState = readButtons() ;
+    if( newState != off )
+    {
+        signal.aspect      = newState ;
+        signal.brakeModule = newState ;
+        return ;
+    }
 }
 
 
@@ -108,7 +107,7 @@ void loop()
     if( teachIn() == waitButtonPress )  // if config mode is in this state,     control all outputs
     {
         setLeds() ;
-        controlSemaphore() ;
+        controlmain() ;
         setBrakeModule() ;
         sendTxSignals() ;
     }

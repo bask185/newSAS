@@ -3,14 +3,15 @@
 #include "src/io.h"
 
 
-uint8 servoPosMin ;
-uint8 servoPosMax ;
+uint8 mainMinPos ;
+uint8 mainGreen ;
 uint8 greenPwm ;
 uint8 yellowPwm ;
 uint8 yellowPwm2 ;
 uint8 redPwm ;
 
 ServoSweep semaphore( servoPin_, 90, 135, 20, 1  ) ;
+ServoSweep dist(      255,       90, 135, 20, 1  ) ;
 
 #define setSignals(a,b,c,d) \
 { \
@@ -25,16 +26,11 @@ void setLeds()
 }
 #undef setSignals
 
-void initializeSemaphore()
-{
-    semaphore.begin() ;
-    semaphore.setMin( 90) ;     // TODO get this from EEPROM
-    semaphore.setMax( 135 ) ;
-}
 
-void controlSemaphore()
+void controlmain()
 {
     semaphore.sweep() ;
+    dist.sweep() ;
 
     static uint8 prevAspect = 0x99 ;                                  // magic number
     if( prevAspect != signal.aspect )

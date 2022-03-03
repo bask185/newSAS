@@ -27,7 +27,7 @@ uint8 rxFreq = off ;
 
 void readDipSwitches()
 {
-    signal.type = ( digitalRead( dip2 ) << 1 ) | digitalRead( dip1 ) ; // two, three or four tone
+    signal.type = ( digitalRead( dip1 ) << 1 ) | digitalRead( dip2 ) ; // two, three or four tone
     signal.locked = digitalRead( dip3 ); 
     
 }
@@ -81,6 +81,15 @@ void debounceInputs() // TESTED SUCCESFULLY
     directionState      = direction.getState() ;
 
     debounceDetector() ;
+}
+
+uint8 readButtons()
+{
+    if(  greenButtonState == FALLING ) return green ;
+    if( yellowButtonState == FALLING ) return yellow ;
+    if(    redButtonState == FALLING ) return red ;
+
+    return off ;
 }
 
 void readIncFreq()
